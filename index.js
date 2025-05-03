@@ -1,7 +1,7 @@
 const express = require("express");
-const puppeteer = require("puppeteer");
-require("dotenv").config();
+const puppeteer = require("puppeteer-core");
 const bodyParser = require("body-parser");
+require("dotenv").config();
 
 const app = express();
 app.use(bodyParser.json());
@@ -11,15 +11,15 @@ app.post("/tweet", async (req, res) => {
   if (!tweet) return res.status(400).send("Tweet text missing.");
 
   const browser = await puppeteer.launch({
+    executablePath: "/usr/bin/google-chrome",
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"]
   });
 
-  const page = await browser.newPage();
-
   try {
-    await page.goto("https://twitter.com/login", { waitUntil: "networkidle2" });
+    const page = await browser.newPage();
 
+    await page.goto("https://twitter.com/login", { waitUntil: "networkidle2" });
     await page.type('input[name="text"]', process.env.TWITTER_USERNAME);
     await page.keyboard.press("Enter");
     await page.waitForTimeout(2000);
@@ -30,19 +30,18 @@ app.post("/tweet", async (req, res) => {
 
     await page.goto("https://twitter.com/compose/tweet", { waitUntil: "networkidle2" });
     await page.waitForSelector('div[aria-label="Tweet text"]');
-
     await page.type('div[aria-label="Tweet text"]', tweet);
     await page.click('div[data-testid="tweetButtonInline"]');
 
     await browser.close();
     res.send("Tweet posted!");
-  } catch (err) {
-    console.error("Tweet failed:", err);
+  } catch (error) {
     await browser.close();
+    console.error("Tweet failed:", error);
     res.status(500).send("Tweet failed.");
   }
 });
 
 app.listen(3000, () => {
-  console.log("Server running on port 3000");
+  console.log("Server running");
 });
