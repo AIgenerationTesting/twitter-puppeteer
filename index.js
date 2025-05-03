@@ -1,5 +1,5 @@
 const express = require("express");
-const puppeteer = require("puppeteer-core");
+const puppeteer = require("puppeteer");
 const bodyParser = require("body-parser");
 require("dotenv").config();
 
@@ -11,7 +11,6 @@ app.post("/tweet", async (req, res) => {
   if (!tweet) return res.status(400).send("Tweet text missing.");
 
   const browser = await puppeteer.launch({
-    executablePath: "/usr/bin/google-chrome",
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"]
   });
