@@ -3,17 +3,15 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "postinstall": "puppeteer install"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "puppeteer": "^19.11.1",
+    "puppeteer": "^19.6.3",
     "dotenv": "^16.0.3",
     "body-parser": "^1.20.2"
   },
-"scripts": {
-  "postinstall": "puppeteer install"
-},
 "engines": {
   "node": ">=18"
 }
