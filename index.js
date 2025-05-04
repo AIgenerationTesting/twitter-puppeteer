@@ -1,5 +1,5 @@
 const express = require("express");
-const puppeteer = require("puppeteer");
+const { chromium } = require("playwright");
 const bodyParser = require("body-parser");
 require("dotenv").config();
 
@@ -10,24 +10,26 @@ app.post("/tweet", async (req, res) => {
   const tweet = req.body.tweet;
   if (!tweet) return res.status(400).send("Tweet text missing.");
 
-  const browser = await puppeteer.launch({
+  const browser = await chromium.launch({
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    args: ["--no-sandbox"]
   });
 
   try {
-    const page = await browser.newPage();
+    const context = await browser.newContext();
+    const page = await context.newPage();
 
-    await page.goto("https://twitter.com/login", { waitUntil: "networkidle2" });
-    await page.type('input[name="text"]', process.env.TWITTER_USERNAME);
+    await page.goto("https://twitter.com/login", { waitUntil: "domcontentloaded" });
+
+    await page.fill('input[name="text"]', process.env.TWITTER_USERNAME);
     await page.keyboard.press("Enter");
     await page.waitForTimeout(2000);
 
-    await page.type('input[name="password"]', process.env.TWITTER_PASSWORD);
+    await page.fill('input[name="password"]', process.env.TWITTER_PASSWORD);
     await page.keyboard.press("Enter");
-    await page.waitForNavigation({ waitUntil: "networkidle2" });
+    await page.waitForNavigation();
 
-    await page.goto("https://twitter.com/compose/tweet", { waitUntil: "networkidle2" });
+    await page.goto("https://twitter.com/compose/tweet");
     await page.waitForSelector('div[aria-label="Tweet text"]');
     await page.type('div[aria-label="Tweet text"]', tweet);
     await page.click('div[data-testid="tweetButtonInline"]');
@@ -42,5 +44,5 @@ app.post("/tweet", async (req, res) => {
 });
 
 app.listen(3000, () => {
-  console.log("Server running");
+  console.log("Playwright server running");
 });
